@@ -1,18 +1,18 @@
-import firebase_app from "../config";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import firebase_app from "../firebase";
+import { getFirestore, doc, getDoc, getDocs, collection } from "firebase/firestore";
 
 const db = getFirestore(firebase_app)
-export default async function getDoument(collection, id) {
-    let docRef = doc(db, collection, id);
 
-    let result = null;
-    let error = null;
-
-    try {
-        result = await getDoc(docRef);
-    } catch (e) {
-        error = e;
-    }
-
-    return { result, error };
+export async function getDocuments(_collection) {
+    return new Promise((resolve, reject) => {
+        try {
+            getDocs(collection(db, _collection)).then((x) => {
+                const result = [];
+                x.forEach(doc => result.push({ ...doc._document.data.value.mapValue.fields, id: doc.id }))
+                resolve({ result: result, error: null });
+            })
+        } catch (err) {
+            resolve({ result: null, error: err })
+        }
+    })
 }
